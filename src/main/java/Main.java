@@ -1,4 +1,4 @@
-import static spark.Spark.get;
+import static spark.Spark.post;
 import static spark.SparkBase.port;
 import static spark.SparkBase.staticFileLocation;
 
@@ -39,7 +39,7 @@ public class Main {
 		port(Integer.valueOf(System.getenv("PORT")));
 		staticFileLocation("/public");
 
-		get("/api/sync", (request, response) -> {
+		post("/api/sync", (request, response) -> {
 
 			String body = request.body();
 			saveSyncs(body);
@@ -83,6 +83,7 @@ public class Main {
 			if (charge == null) {
 				charge = new Charge();
 				charge.setPerson(person);
+				charge.setCharge(new BigDecimal("0"));
 				charges.put(person, charge);
 			}
 			charge.setCharge(charge.getCharge().add(cost.getPrice()));

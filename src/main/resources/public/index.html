@@ -41,7 +41,9 @@ app.controller('customersCtrl', function($scope,$timeout, $http) {
 		localStorage.syncDate = null;
 		localStorage.syncs = JSON.stringify([]);
 		localStorage.costs = JSON.stringify([]);
+		localStorage.charges = JSON.stringify([]);
 		localStorage.cost = 0;
+		localStorage.rate = 0;
 		localStorage.init = true;
 	}
 	
@@ -55,7 +57,9 @@ app.controller('customersCtrl', function($scope,$timeout, $http) {
 	scope.new.currency ="EUR";
 	scope.syncs = JSON.parse(localStorage.syncs);
 	scope.costs = JSON.parse(localStorage.costs);
-	scope.cost = localStorage.cost;
+	scope.cost = JSON.parse(localStorage.cost);
+	scope.charges = JSON.parse(localStorage.charges);
+	scope.rate =  JSON.parse(localStorage.rate);
 	
 	scope.startSync = function(){
 		scope.active='loading';
@@ -65,19 +69,35 @@ app.controller('customersCtrl', function($scope,$timeout, $http) {
 		
 	};
 	scope.sync = function(){
-		scope.syncs.forEach(function(entry){
-		  $http.post('/someUrl', JSON.stringify(entry), config).then(successCallback, errorCallback);
-		});
-		scope.syncs = [];
-		localStorage.syncs = JSON.stringify([]);
 		
+		$http.post('/api/sync', JSON.stringify(scope.syncs), {})
+		.then(function (data){
+			scope.cost = data.data.data.cost;
+			localStorage.cost = JSON.stringify(scope.cost);
+			
+			scope.costs = data.data.data.costs;
+			localStorage.costs = JSON.stringify(scope.costs);
+			
+			scope.lastSync = data.data.data.date;
+			localStorage.lastSync = JSON.stringify(scope.lastSync);
+			
+			scope.rate = data.data.data.rate;
+			localStorage.rate = JSON.stringify(scope.rate);
+			
+			scope.charges = data.data.data.charging;
+			localStorage.charges = JSON.stringify(scope.charges);
+			
+			scope.syncs = [];
+			localStorage.syncs = JSON.stringify([]);
+			
+		
+			scope.active='sync';
+			scope.warning = false;
+		}, function (){alert('Error')});
 	
-		scope.active='sync';
-		scope.lastSync = 'Heute';
-		scope.warning = false;
 	};
 	scope.save = function(){
-		if(scope.new.name == null || scope.new.bezeichnung == null || scope.new.preis == null){
+		if(scope.new.name == null || scope.new.description == null || scope.new.price == null){
 			alert('Bitte Formular ausfüllen');
 			return;
 		}else{
@@ -135,7 +155,7 @@ Loading
 	</ul>
 	
 	<ul class="list-group" ng-show="active =='rechnung' ">
-		<li class="list-group-item" ng-repeat="x in results">{{x.person}} {{x.charge}}€ <span ng-class="x.saldo < 0 ? 'label label-danger':'label label-success'">{{x.saldo}}</span></li>
+		<li class="list-group-item" ng-repeat="x in charges">{{x.person}} {{x.charge}}€ <span ng-class="x.saldo < 0 ? 'label label-danger':'label label-success'">{{x.saldo}}</span></li>
 	</ul>
 
 	<div class="panel-body" ng-show="active =='sync' ">
