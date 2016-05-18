@@ -49,7 +49,7 @@ app.controller('customersCtrl', function($scope,$timeout, $http) {
 	
 	scope.active='kosten';
 	scope.lastSync = localStorage.syncDate;
-	scope.warning = JSON.parse(localStorage.syncs.length) > 0;
+	scope.warning = JSON.parse(localStorage.syncs).length > 0;
 	scope.new = {};
 	scope.new.name;
 	scope.new.description;
@@ -160,6 +160,8 @@ Loading
 
 	<div class="panel-body" ng-show="active =='sync' ">
 		Zuletzt synchronisiert : {{lastSync}}
+		<br>
+		SEK in EUR : {{rate}}
 	</div>
 
 	<div class="list-group" ng-show="active =='sync' ">

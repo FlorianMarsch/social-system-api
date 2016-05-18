@@ -67,7 +67,7 @@ public class Main {
 		BigDecimal price = new BigDecimal("0");
 		List<Cost> allCosts = dataService.getAllCosts();
 		for (Cost cost : allCosts) {
-			price.add(cost.getPrice());
+			price = price.add(cost.getPrice());
 		}
 		return price;
 	}
