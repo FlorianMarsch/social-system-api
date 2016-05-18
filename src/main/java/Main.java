@@ -28,7 +28,7 @@ public class Main {
 	private CurrencyExchangeService currencyXChange = new CurrencyExchangeService();
 	private DataService dataService = new DataService();
 	private SaveService saveService = new SaveService();
-	
+
 	public static void main(String[] args) {
 
 		new Main().init();
@@ -40,10 +40,10 @@ public class Main {
 		staticFileLocation("/public");
 
 		get("/api/sync", (request, response) -> {
-			
+
 			String body = request.body();
 			saveSyncs(body);
-			
+
 			Map<String, Object> attributes = new HashMap<>();
 
 			JSONObject data = new JSONObject();
@@ -57,7 +57,7 @@ public class Main {
 				e.printStackTrace();
 				throw new RuntimeException();
 			}
-			attributes.put("data", data.toString() );
+			attributes.put("data", data.toString());
 
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
@@ -75,32 +75,35 @@ public class Main {
 	JSONArray getCharging() {
 		JSONArray jsonArray = new JSONArray();
 		List<Cost> allCosts = dataService.getAllCosts();
-		Map<String,Charge> charges = new HashMap<>();
-		
+		Map<String, Charge> charges = new HashMap<>();
+
 		for (Cost cost : allCosts) {
 			String person = cost.getPerson();
 			Charge charge = charges.get(person);
-			if(charge == null){
+			if (charge == null) {
 				charge = new Charge();
 				charge.setPerson(person);
 				charges.put(person, charge);
 			}
 			charge.setCharge(charge.getCharge().add(cost.getPrice()));
 		}
-		
-		BigDecimal average = new BigDecimal(getCost().doubleValue() / charges.size());
-		for (String person : charges.keySet()) {
-			Charge charge = charges.get(person);
-			charge.setSaldo(charge.getCharge().subtract(average));
-			jsonArray.put(charge.getJSONObject());
+
+		if (!charges.isEmpty()) {
+
+			double val = getCost().doubleValue() / charges.size();
+			BigDecimal average = new BigDecimal(val);
+			for (String person : charges.keySet()) {
+				Charge charge = charges.get(person);
+				charge.setSaldo(charge.getCharge().subtract(average));
+				jsonArray.put(charge.getJSONObject());
+			}
 		}
-		
-		
+
 		return jsonArray;
 	}
-	
+
 	JSONArray getCosts() {
-		
+
 		JSONArray jsonArray = new JSONArray();
 		List<Cost> allCosts = dataService.getAllCosts();
 		for (Cost cost : allCosts) {
@@ -111,7 +114,7 @@ public class Main {
 
 	private void saveSyncs(String body) {
 		try {
-			if(body == null || body.trim().isEmpty()){
+			if (body == null || body.trim().isEmpty()) {
 				return;
 			}
 			JSONArray jsonArray = new JSONArray(body);
@@ -125,7 +128,7 @@ public class Main {
 			e.printStackTrace();
 			throw new RuntimeException();
 		}
-		
+
 	}
 
 	String getDate() {

@@ -1,13 +1,9 @@
 package de.florianmarsch.preisomat.vo;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Table
-@Entity
+
 public class SyncPoint {
 	private String name;
 	private String description;

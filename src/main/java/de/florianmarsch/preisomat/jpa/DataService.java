@@ -14,7 +14,7 @@ public class DataService {
 		
 		EntityManager em = new EmFactory().produceEntityManager();
 		em.getTransaction().begin();
-		Query query = em.createNamedQuery("Select x from Cost x");
+		Query query = em.createQuery("Select x from Cost x");
 		List resultList = query.getResultList();
 		
 		em.getTransaction().commit();
