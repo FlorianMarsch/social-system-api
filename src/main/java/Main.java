@@ -1,33 +1,27 @@
-import static spark.Spark.post;
+import static spark.Spark.get;
 import static spark.SparkBase.port;
 import static spark.SparkBase.staticFileLocation;
 
-import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.InputStream;
+import java.net.URL;
+import java.text.Normalizer;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import de.florianmarsch.preisomat.fixerio.CurrencyExchangeService;
-import de.florianmarsch.preisomat.jpa.DataService;
-import de.florianmarsch.preisomat.jpa.SaveService;
-import de.florianmarsch.preisomat.vo.Charge;
-import de.florianmarsch.preisomat.vo.Cost;
-import de.florianmarsch.preisomat.vo.SyncPoint;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 
 public class Main {
-
-	private CurrencyExchangeService currencyXChange = new CurrencyExchangeService();
-	private DataService dataService = new DataService();
-	private SaveService saveService = new SaveService();
 
 	public static void main(String[] args) {
 
@@ -39,23 +33,16 @@ public class Main {
 		port(Integer.valueOf(System.getenv("PORT")));
 		staticFileLocation("/public");
 
-		post("/api/sync", (request, response) -> {
+		get("/api/lineup/:id", (request, response) -> {
 
-			String body = request.body();
-			saveSyncs(body);
+			String id = request.params(":id");
+			Set<String> recivedLineUp = reciveLineUp(id);
 
 			Map<String, Object> attributes = new HashMap<>();
 
-			JSONObject data = new JSONObject();
-			try {
-				data.put("charging", getCharging());
-				data.put("costs", getCosts());
-				data.put("rate", currencyXChange.getSEK());
-				data.put("date", getDate());
-				data.put("cost", getCost());
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException();
+			JSONArray data = new JSONArray();
+			for (String playerName : recivedLineUp) {
+				data.put(playerName);
 			}
 			attributes.put("data", data.toString());
 
@@ -63,78 +50,38 @@ public class Main {
 		} , new FreeMarkerEngine());
 	}
 
-	BigDecimal getCost() {
-		BigDecimal price = new BigDecimal("0");
-		List<Cost> allCosts = dataService.getAllCosts();
-		for (Cost cost : allCosts) {
-			price = price.add(cost.getPrice());
+	public Set<String> reciveLineUp(String id) {
+		if (id == null | id.trim().isEmpty()) {
+			return new HashSet<>();
 		}
-		return price;
-	}
-
-	JSONArray getCharging() {
-		JSONArray jsonArray = new JSONArray();
-		List<Cost> allCosts = dataService.getAllCosts();
-		Map<String, Charge> charges = new HashMap<>();
-
-		for (Cost cost : allCosts) {
-			String person = cost.getPerson();
-			Charge charge = charges.get(person);
-			if (charge == null) {
-				charge = new Charge();
-				charge.setPerson(person);
-				charge.setCharge(new BigDecimal("0"));
-				charges.put(person, charge);
-			}
-			charge.setCharge(charge.getCharge().add(cost.getPrice()));
-		}
-
-		if (!charges.isEmpty()) {
-
-			double val = getCost().doubleValue() / charges.size();
-			BigDecimal average = new BigDecimal(val);
-			for (String person : charges.keySet()) {
-				Charge charge = charges.get(person);
-				charge.setSaldo(charge.getCharge().subtract(average));
-				jsonArray.put(charge.getJSONObject());
-			}
-		}
-
-		return jsonArray;
-	}
-
-	JSONArray getCosts() {
-
-		JSONArray jsonArray = new JSONArray();
-		List<Cost> allCosts = dataService.getAllCosts();
-		for (Cost cost : allCosts) {
-			jsonArray.put(cost.getJSONObject());
-		}
-		return jsonArray;
-	}
-
-	private void saveSyncs(String body) {
 		try {
-			if (body == null || body.trim().isEmpty()) {
-				return;
+			String html = null;
+			String urlString = "http://classic.comunio.de/playerInfo.phtml?pid="+id;
+			InputStream is = (InputStream) new URL(urlString).getContent();
+			html = IOUtils.toString(is, "UTF-8");
+
+			html = Normalizer.normalize(html, Normalizer.Form.NFD);
+			html = html.replaceAll("[^\\p{ASCII}]", "");
+
+			Document doc = Jsoup.parse(html);
+			Elements lines = doc.select(".name_cont");
+
+			Set<String> teamList = new HashSet<String>();
+			for (int i = 0; i < lines.size(); i++) {
+				Element line = lines.get(i);
+				String tempName = line.html();
+				tempName = StringEscapeUtils.unescapeHtml(tempName);
+				String norm = Normalizer.normalize(tempName, Normalizer.Form.NFD);
+				norm = norm.replaceAll("[^\\p{ASCII}]", "");
+				String trim = norm.trim();
+
+				teamList.add(trim);
 			}
-			JSONArray jsonArray = new JSONArray(body);
-			for (int i = 0; i < jsonArray.length(); i++) {
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				SyncPoint syncPoint = new SyncPoint();
-				syncPoint.parseFromJSON(jsonObject);
-				saveService.saveSyncPoint(syncPoint);
-			}
-		} catch (JSONException e) {
+			return teamList;
+		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException();
+			throw new RuntimeException("abbruch", e);
 		}
-
-	}
-
-	String getDate() {
-		DateFormat formatter = new SimpleDateFormat();
-		return formatter.format(new Date());
 	}
 
 }
