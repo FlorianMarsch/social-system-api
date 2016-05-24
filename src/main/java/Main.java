@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -237,7 +238,13 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return tempReturn.toString();
+		return normalize(tempReturn.toString());
 	}
 
+	public String normalize(String aString){
+		String norm = Normalizer.normalize(aString, Normalizer.Form.NFD);
+		norm = norm.replaceAll("[^\\p{ASCII}]", "");
+		return norm;
+	}
+	
 }
