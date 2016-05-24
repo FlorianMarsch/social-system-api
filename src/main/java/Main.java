@@ -51,6 +51,49 @@ public class Main {
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
 
+		get("/api/ligue", (request, response) -> {
+
+			String content = loadFile(
+					"http://api.football-api.com/2.0/competitions?Authorization=" + System.getenv("apikey"));
+
+			JSONArray data;
+			try {
+				data = new JSONArray(content);
+			} catch (Exception e) {
+				data = new JSONArray();
+				e.printStackTrace();
+			}
+
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("data", data.toString());
+			return new ModelAndView(attributes, "json.ftl");
+		} , new FreeMarkerEngine());
+
+		
+		
+			get("/api/team/:id/squad", (request, response) -> {
+
+				JSONArray data = new JSONArray();
+				String id = request.params(":id");
+
+				String content = loadFile("http://api.football-api.com/2.0/team/"+id+"?Authorization=" + System.getenv("apikey"));
+
+				try {
+					JSONArray squad = new JSONObject(content).getJSONArray("squad");
+					for (int i = 0; i < squad.length(); i++) {
+						JSONObject player = squad.getJSONObject(i);
+						data.put(player.getString("name"));
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				Map<String, Object> attributes = new HashMap<>();
+				attributes.put("data", data.toString());
+				return new ModelAndView(attributes, "json.ftl");
+			} , new FreeMarkerEngine());
+			
+			
 		get("/api/ligue/:id/events", (request, response) -> {
 
 			JSONArray data = new JSONArray();
