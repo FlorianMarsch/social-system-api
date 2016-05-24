@@ -244,6 +244,9 @@ public class Main {
 	public String normalize(String aString){
 		String norm = Normalizer.normalize(aString, Normalizer.Form.NFD);
 		norm = norm.replaceAll("[^\\p{ASCII}]", "");
+		if(norm.startsWith(". ")){
+			norm = norm.replaceAll(". ", "");
+		}
 		return norm;
 	}
 	
