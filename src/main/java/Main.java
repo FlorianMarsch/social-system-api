@@ -69,30 +69,66 @@ public class Main {
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
 
-		
-		
-			get("/api/team/:id/squad", (request, response) -> {
+		get("/api/ligue/:id/team", (request, response) -> {
 
-				JSONArray data = new JSONArray();
-				String id = request.params(":id");
+			JSONArray data = new JSONArray();
+			String id = request.params(":id");
 
-				String content = loadFile("http://api.football-api.com/2.0/team/"+id+"?Authorization=" + System.getenv("apikey"));
+			String content = loadFile(
+					"http://api.football-api.com/2.0/standings/" + id + "?Authorization=" + System.getenv("apikey"));
 
-				try {
-					JSONArray squad = new JSONObject(content).getJSONArray("squad");
-					for (int i = 0; i < squad.length(); i++) {
-						JSONObject player = squad.getJSONObject(i);
-						data.put(player.getString("name"));
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
+			try {
+				JSONArray teams = new JSONArray(content);
+				for (int i = 0; i < teams.length(); i++) {
+					JSONObject team = teams.getJSONObject(i);
+					JSONObject returnTeam = new JSONObject();
+
+					returnTeam.put("name", team.getString("team_name"));
+					returnTeam.put("id", team.getString("team_id"));
+
+					data.put(returnTeam);
+
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-				Map<String, Object> attributes = new HashMap<>();
-				attributes.put("data", data.toString());
-				return new ModelAndView(attributes, "json.ftl");
-			} , new FreeMarkerEngine());
-			
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("data", data.toString());
+			return new ModelAndView(attributes, "json.ftl");
+		} , new FreeMarkerEngine());
+		
+		
+		get("/api/team/:id/squad", (request, response) -> {
+
+			JSONArray data = new JSONArray();
+			String id = request.params(":id");
+
+			String content = loadFile(
+					"http://api.football-api.com/2.0/team/" + id + "?Authorization=" + System.getenv("apikey"));
+
+			try {
+				JSONArray squad = new JSONObject(content).getJSONArray("squad");
+				for (int i = 0; i < squad.length(); i++) {
+					JSONObject player = squad.getJSONObject(i);
+					JSONObject returnPlayer = new JSONObject();
+
+					returnPlayer.put("name", player.getString("name"));
+					returnPlayer.put("id", player.getString("id"));
+					returnPlayer.put("position", player.getString("position"));
+					returnPlayer.put("injured", Boolean.valueOf(player.getString("injured")));
+
+					data.put(returnPlayer);
+
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("data", data.toString());
+			return new ModelAndView(attributes, "json.ftl");
+		} , new FreeMarkerEngine());
 			
 		get("/api/ligue/:id/events", (request, response) -> {
 
