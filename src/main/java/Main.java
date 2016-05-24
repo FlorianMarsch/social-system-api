@@ -115,7 +115,7 @@ public class Main {
 					JSONObject player = squad.getJSONObject(i);
 					JSONObject returnPlayer = new JSONObject();
 
-					returnPlayer.put("name", player.getString("name"));
+					returnPlayer.put("name",normalize( player.getString("name")));
 					returnPlayer.put("id", player.getString("id"));
 					returnPlayer.put("position", player.getString("position"));
 					returnPlayer.put("injured", Boolean.valueOf(player.getString("injured")));
@@ -163,7 +163,7 @@ public class Main {
 								type = "own";
 							}
 
-							returnEvent.put("player", name);
+							returnEvent.put("player", normalize(name));
 							returnEvent.put("type", type);
 
 							data.put(returnEvent);
@@ -238,7 +238,7 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return normalize(tempReturn.toString());
+		return tempReturn.toString();
 	}
 
 	public String normalize(String aString){
