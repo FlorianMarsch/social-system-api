@@ -2,21 +2,18 @@ import static spark.Spark.get;
 import static spark.SparkBase.port;
 import static spark.SparkBase.staticFileLocation;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.Normalizer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.json.JSONArray;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
@@ -33,55 +30,85 @@ public class Main {
 		port(Integer.valueOf(System.getenv("PORT")));
 		staticFileLocation("/public");
 
-		get("/api/lineup/:id", (request, response) -> {
+		get("/api/team/:id", (request, response) -> {
 
 			String id = request.params(":id");
-			Set<String> recivedLineUp = reciveLineUp(id);
+			String all = loadFile("https://vintagemonster.onefootball.com/api/teams/de/" + id + ".json");
+			JSONObject document;
+			JSONArray players;
+			try {
+				document = new JSONObject(all);
+				players = document.getJSONObject("data").getJSONObject("team").getJSONArray("players");
+			} catch (Exception e) {
+				e.printStackTrace();
+				players = new JSONArray();
+			}
 
 			Map<String, Object> attributes = new HashMap<>();
 
-			JSONArray data = new JSONArray();
-			for (String playerName : recivedLineUp) {
-				data.put(playerName);
-			}
-			attributes.put("data", data.toString());
+			attributes.put("data", players.toString());
 
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
+
+		get("/api/events/:id", (request, response) -> {
+
+			Integer id = Integer.valueOf(request.params(":id")) + 5662927;
+			String content = loadFile(
+					"http://feedmonster.iliga.de/feeds/il/de/competitions/1/1271/matchdays/" + id + ".json");
+			JSONArray data = new JSONArray();
+			try {
+				JSONObject json = new JSONObject(content);
+				JSONArray kickoffs = json.getJSONArray("kickoffs");
+
+				for (int k = 0; k < kickoffs.length(); k++) {
+					JSONObject element = kickoffs.getJSONObject(k);
+					JSONArray groups = element.getJSONArray("groups");
+					for (int gr = 0; gr < groups.length(); gr++) {
+						JSONObject group = groups.getJSONObject(gr);
+						JSONArray matches = group.getJSONArray("matches");
+						for (int m = 0; m < matches.length(); m++) {
+							JSONObject match = matches.getJSONObject(m);
+							JSONArray goals = match.getJSONArray("goals");
+							for (int go = 0; go < goals.length(); go++) {
+								JSONObject goal = goals.getJSONObject(go);
+								data.put(goal);
+							}
+						}
+					}
+				}
+
+			} catch (JSONException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Abbruch", e);
+			}
+
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("data", data.toString());
+			return new ModelAndView(attributes, "json.ftl");
+		} , new FreeMarkerEngine());
+
 	}
 
-	public Set<String> reciveLineUp(String id) {
-		if (id == null | id.trim().isEmpty()) {
-			return new HashSet<>();
-		}
+	public String loadFile(String url) {
+
+		StringBuffer tempReturn = new StringBuffer();
 		try {
-			String html = null;
-			String urlString = "http://classic.comunio.de/playerInfo.phtml?pid="+id;
-			InputStream is = (InputStream) new URL(urlString).getContent();
-			html = IOUtils.toString(is, "UTF-8");
+			URL u = new URL(url);
+			InputStream is = u.openStream();
+			DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
+			String s;
 
-			html = Normalizer.normalize(html, Normalizer.Form.NFD);
-			html = html.replaceAll("[^\\p{ASCII}]", "");
-
-			Document doc = Jsoup.parse(html);
-			Elements lines = doc.select(".name_cont");
-
-			Set<String> teamList = new HashSet<String>();
-			for (int i = 0; i < lines.size(); i++) {
-				Element line = lines.get(i);
-				String tempName = line.html();
-				tempName = StringEscapeUtils.unescapeHtml(tempName);
-				String norm = Normalizer.normalize(tempName, Normalizer.Form.NFD);
-				norm = norm.replaceAll("[^\\p{ASCII}]", "");
-				String trim = norm.trim();
-
-				teamList.add(trim);
+			while ((s = dis.readLine()) != null) {
+				tempReturn.append(s);
 			}
-			return teamList;
-		} catch (Exception e) {
+
+		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("abbruch", e);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		return tempReturn.toString();
 	}
 
 }
