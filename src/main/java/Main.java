@@ -29,7 +29,7 @@ public class Main {
 	public void init() {
 		port(Integer.valueOf(System.getenv("PORT")));
 		staticFileLocation("/public");
-
+//Deprecated
 		get("/api/team/:id", (request, response) -> {
 
 			String id = request.params(":id");
@@ -85,6 +85,7 @@ public class Main {
 
 					returnTeam.put("name", team.getString("team_name"));
 					returnTeam.put("id", team.getString("team_id"));
+					returnTeam.put("ligue", id);
 
 					data.put(returnTeam);
 
@@ -117,6 +118,7 @@ public class Main {
 					returnPlayer.put("id", player.getString("id"));
 					returnPlayer.put("position", player.getString("position"));
 					returnPlayer.put("injured", Boolean.valueOf(player.getString("injured")));
+					returnPlayer.put("team", id);
 
 					data.put(returnPlayer);
 
@@ -176,6 +178,8 @@ public class Main {
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
 
+		
+		//Deprecated
 		get("/api/events/:id", (request, response) -> {
 
 			Integer id = Integer.valueOf(request.params(":id")) + 5662927;
