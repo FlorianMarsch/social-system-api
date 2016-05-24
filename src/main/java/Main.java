@@ -51,6 +51,52 @@ public class Main {
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
 
+		get("/api/ligue/:id/events", (request, response) -> {
+
+			JSONArray data = new JSONArray();
+			String id = request.params(":id");
+
+			String content = loadFile("http://api.football-api.com/2.0/matches?comp_id=" + id
+					+ "&from_date=01-01-1999&to_date=01-01-2099&Authorization=" + System.getenv("apikey"));
+
+			try {
+				JSONArray root = new JSONArray(content);
+				for (int i = 0; i < root.length(); i++) {
+					JSONObject match = root.getJSONObject(i);
+					JSONArray events = match.getJSONArray("events");
+					for (int j = 0; j < events.length(); j++) {
+						JSONObject event = events.getJSONObject(j);
+						String type = event.getString("type");
+						if (type.equals("goal")) {
+
+							JSONObject returnEvent = new JSONObject();
+							returnEvent.put("id", event.getString("id"));
+							String name = event.getString("player");
+							if (name.contains(" (pen.)")) {
+								name = name.replace(" (pen.)", "");
+								type = "penalty";
+							}
+							if (name.contains(" (o.g.)")) {
+								name = name.replace(" (o.g.)", "");
+								type = "own";
+							}
+
+							returnEvent.put("player", name);
+							returnEvent.put("type", type);
+
+							data.put(returnEvent);
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put("data", data.toString());
+			return new ModelAndView(attributes, "json.ftl");
+		} , new FreeMarkerEngine());
+
 		get("/api/events/:id", (request, response) -> {
 
 			Integer id = Integer.valueOf(request.params(":id")) + 5662927;
