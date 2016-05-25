@@ -30,27 +30,6 @@ public class Main {
 	public void init() {
 		port(Integer.valueOf(System.getenv("PORT")));
 		staticFileLocation("/public");
-//Deprecated
-		get("/api/team/:id", (request, response) -> {
-
-			String id = request.params(":id");
-			String all = loadFile("https://vintagemonster.onefootball.com/api/teams/de/" + id + ".json");
-			JSONObject document;
-			JSONArray players;
-			try {
-				document = new JSONObject(all);
-				players = document.getJSONObject("data").getJSONObject("team").getJSONArray("players");
-			} catch (Exception e) {
-				e.printStackTrace();
-				players = new JSONArray();
-			}
-
-			Map<String, Object> attributes = new HashMap<>();
-
-			attributes.put("data", players.toString());
-
-			return new ModelAndView(attributes, "json.ftl");
-		} , new FreeMarkerEngine());
 
 		get("/api/ligue", (request, response) -> {
 
@@ -178,46 +157,7 @@ public class Main {
 			attributes.put("data", data.toString());
 			return new ModelAndView(attributes, "json.ftl");
 		} , new FreeMarkerEngine());
-
-		
-		//Deprecated
-		get("/api/events/:id", (request, response) -> {
-
-			Integer id = Integer.valueOf(request.params(":id")) + 5662927;
-			String content = loadFile(
-					"http://feedmonster.iliga.de/feeds/il/de/competitions/1/1271/matchdays/" + id + ".json");
-			JSONArray data = new JSONArray();
-			try {
-				JSONObject json = new JSONObject(content);
-				JSONArray kickoffs = json.getJSONArray("kickoffs");
-
-				for (int k = 0; k < kickoffs.length(); k++) {
-					JSONObject element = kickoffs.getJSONObject(k);
-					JSONArray groups = element.getJSONArray("groups");
-					for (int gr = 0; gr < groups.length(); gr++) {
-						JSONObject group = groups.getJSONObject(gr);
-						JSONArray matches = group.getJSONArray("matches");
-						for (int m = 0; m < matches.length(); m++) {
-							JSONObject match = matches.getJSONObject(m);
-							JSONArray goals = match.getJSONArray("goals");
-							for (int go = 0; go < goals.length(); go++) {
-								JSONObject goal = goals.getJSONObject(go);
-								data.put(goal);
-							}
-						}
-					}
-				}
-
-			} catch (JSONException e) {
-				e.printStackTrace();
-				throw new RuntimeException("Abbruch", e);
-			}
-
-			Map<String, Object> attributes = new HashMap<>();
-			attributes.put("data", data.toString());
-			return new ModelAndView(attributes, "json.ftl");
-		} , new FreeMarkerEngine());
-
+	
 	}
 
 	public String loadFile(String url) {
@@ -244,8 +184,8 @@ public class Main {
 	public String normalize(String aString){
 		String norm = Normalizer.normalize(aString, Normalizer.Form.NFD);
 		norm = norm.replaceAll("[^\\p{ASCII}]", "");
-		if(norm.startsWith(". ")){
-			norm = norm.replaceAll(". ", "");
+		if(norm.startsWith("[.] ")){
+			norm = norm.replaceAll("[.] ", "");
 		}
 		return norm;
 	}
