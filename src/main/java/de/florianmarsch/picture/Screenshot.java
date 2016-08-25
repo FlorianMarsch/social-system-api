@@ -22,8 +22,8 @@ public class Screenshot {
 		String html = loadFile(url);
 		int width = 458, height = 228;
 		// Create a `BufferedImage` and create the its `Graphics`
-		BufferedImage image = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice()
-				.getDefaultConfiguration().createCompatibleImage(width, height);
+		BufferedImage image = new BufferedImage(100, 50,
+                BufferedImage.TYPE_INT_ARGB);
 		Graphics graphics = image.createGraphics();
 		// Create an `JEditorPane` and invoke `print(Graphics)`
 		JEditorPane jep = new JEditorPane("text/html", html);
