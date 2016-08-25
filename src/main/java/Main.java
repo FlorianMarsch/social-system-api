@@ -39,6 +39,7 @@ public class Main {
 				}
 
 				JSONObject body = new JSONObject(bodyContent);
+				System.out.println(body);
 
 				ConfigurationBuilder cb = new ConfigurationBuilder();
 				cb.setDebugEnabled(true).setOAuthConsumerKey(body.getString("consumerKey"))
