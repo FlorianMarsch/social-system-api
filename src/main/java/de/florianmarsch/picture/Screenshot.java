@@ -22,7 +22,7 @@ public class Screenshot {
 		String html = loadFile(url);
 		int width = 458, height = 228;
 		// Create a `BufferedImage` and create the its `Graphics`
-		BufferedImage image = new BufferedImage(100, 50,
+		BufferedImage image = new BufferedImage(width, height,
                 BufferedImage.TYPE_INT_ARGB);
 		Graphics graphics = image.createGraphics();
 		// Create an `JEditorPane` and invoke `print(Graphics)`
@@ -33,7 +33,7 @@ public class Screenshot {
 
 		File output = null;
 		try {
-			output = File.createTempFile(UUID.fromString(url).toString(), ".png");
+			output = File.createTempFile("temp", ".png");
 			ImageIO.write(image, "png", output);
 		} catch (IOException e) {
 			e.printStackTrace();
