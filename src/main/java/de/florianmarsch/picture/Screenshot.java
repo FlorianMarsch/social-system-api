@@ -34,7 +34,9 @@ public class Screenshot {
 		File output = null;
 		try {
 			output = File.createTempFile("temp", ".png");
+			System.out.println("uses file "+output.getAbsolutePath());
 			ImageIO.write(image, "png", output);
+			System.out.println("image on file");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
