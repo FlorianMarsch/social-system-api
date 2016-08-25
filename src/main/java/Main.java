@@ -2,14 +2,17 @@ import static spark.Spark.post;
 import static spark.SparkBase.port;
 import static spark.SparkBase.staticFileLocation;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
+import de.florianmarsch.picture.Screenshot;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 import twitter4j.Status;
+import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
@@ -45,7 +48,22 @@ public class Main {
 				TwitterFactory tf = new TwitterFactory(cb.build());
 				Twitter twitter = tf.getInstance();
 
-				Status status = twitter.updateStatus(body.getString("tweet"));
+				String text = body.getString("tweet");
+				if(body.has("image")){
+					String image = body.getString("image");
+					
+					Screenshot sh = new Screenshot();
+					File file = sh.save(image);
+					
+					StatusUpdate latestStatus = new StatusUpdate(text);
+					
+					latestStatus.setMedia(file);
+					
+					twitter.updateStatus(latestStatus );
+					
+				}else{
+					Status status = twitter.updateStatus(text);
+				}
 				message = "created";
 			} catch (Exception e) {
 				e.printStackTrace();
