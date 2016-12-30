@@ -50,19 +50,24 @@ public class Main {
 				Twitter twitter = tf.getInstance();
 
 				String text = body.getString("tweet");
-				if(body.has("image")){
+				if (body.has("image")) {
 					String image = body.getString("image");
-					
+
 					Screenshot sh = new Screenshot();
-					File file = sh.save(image);
-					
+					File file = null;
+					if (body.getBoolean("isImage")) {
+						file = sh.saveDirectly(image);
+					} else {
+						file = sh.save(image);
+					}
+
 					StatusUpdate latestStatus = new StatusUpdate(text);
-					
+
 					latestStatus.setMedia(file);
-					
-					twitter.updateStatus(latestStatus );
-					
-				}else{
+
+					twitter.updateStatus(latestStatus);
+
+				} else {
 					Status status = twitter.updateStatus(text);
 				}
 				message = "created";

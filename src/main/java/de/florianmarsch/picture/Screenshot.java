@@ -6,6 +6,8 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -17,6 +19,7 @@ import javax.swing.JEditorPane;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +28,23 @@ public class Screenshot {
 
 	private Boolean wait = Boolean.TRUE;
 
+	public File saveDirectly(String url) {
+		String content = loadFile(url);
+		File output=null;
+		try {
+			output = null;
+			output = File.createTempFile("temp", ".png");
+			
+			IOUtils.write(content, new FileOutputStream(output));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		
+		return output;
+	}
+	
+	
 	public File save(String url) {
 		String screensurl = "https://www.googleapis.com/pagespeedonline/v1/runPagespeed?url=" + url
 				+ "&screenshot=true&strategy=mobile";
