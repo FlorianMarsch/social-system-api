@@ -1,16 +1,13 @@
-import static spark.Spark.post;
-import static spark.SparkBase.port;
-import static spark.SparkBase.staticFileLocation;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.florianmarsch.picture.Screenshot;
-import spark.ModelAndView;
-import spark.template.freemarker.FreeMarkerEngine;
+import de.florianmarsch.server.Server;
+import de.florianmarsch.vo.TweetVO;
 import twitter4j.Status;
 import twitter4j.StatusUpdate;
 import twitter4j.Twitter;
@@ -21,15 +18,11 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		new Main().init();
+		Integer onPort = Integer.valueOf(System.getenv("PORT"));
 
-	}
-
-	public void init() {
-		port(Integer.valueOf(System.getenv("PORT")));
-		staticFileLocation("/public");
-
-		post("/api/twitter", (request, response) -> {
+		Server server = new Server();
+		server.start(onPort);
+		server.post("/api/twitter", (request, response) -> {
 
 			String message = "";
 			try {
@@ -38,24 +31,25 @@ public class Main {
 					throw new IllegalArgumentException("No Content");
 				}
 
-				JSONObject body = new JSONObject(bodyContent);
-				System.out.println(body);
+				ObjectMapper mapper = new ObjectMapper();
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+				TweetVO tweet = mapper.readValue(bodyContent, TweetVO.class);
 
 				ConfigurationBuilder cb = new ConfigurationBuilder();
-				cb.setDebugEnabled(true).setOAuthConsumerKey(body.getString("consumerKey"))
-						.setOAuthConsumerSecret(body.getString("consumerSecret"))
-						.setOAuthAccessToken(body.getString("accessToken"))
-						.setOAuthAccessTokenSecret(body.getString("accessTokenSecret"));
+				cb.setDebugEnabled(true).setOAuthConsumerKey(tweet.getConsumerKey())
+						.setOAuthConsumerSecret(tweet.getConsumerSecret()).setOAuthAccessToken(tweet.getAccessToken())
+						.setOAuthAccessTokenSecret(tweet.getAccessTokenSecret());
 				TwitterFactory tf = new TwitterFactory(cb.build());
 				Twitter twitter = tf.getInstance();
 
-				String text = body.getString("tweet");
-				if (body.has("image")) {
-					String image = body.getString("image");
+				String text = tweet.getTweet();
+				if (tweet.getImage() != null) {
+					String image = tweet.getImage();
 
 					Screenshot sh = new Screenshot();
 					File file = null;
-					if (body.getBoolean("isImage")) {
+					if (tweet.getIsImage()) {
 						file = sh.saveDirectly(image);
 					} else {
 						file = sh.save(image);
@@ -78,8 +72,8 @@ public class Main {
 
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("data", message);
-			return new ModelAndView(attributes, "json.ftl");
-		} , new FreeMarkerEngine());
+			return attributes;
+		});
 
 	}
 }
