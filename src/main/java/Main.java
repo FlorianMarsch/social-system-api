@@ -93,7 +93,7 @@ public class Main {
 			String key = request.params(":uuid");
 			File file = pictures.get(key);
 			
-			
+			response.header("Content-Type", "image/png");
 			return IOUtils.toString(new FileInputStream(file));
 		});
 		
