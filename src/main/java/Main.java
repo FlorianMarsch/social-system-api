@@ -148,7 +148,7 @@ public class Main {
 				attachments.add(attachment );
 				messagePost.setAttachments(attachments );
 			}
-			webApiClient.postMessage(messagePost );
+			message = webApiClient.postMessage(messagePost );
 			
 			
 		} catch (Exception e) {
