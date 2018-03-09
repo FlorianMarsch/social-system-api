@@ -1,12 +1,16 @@
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import allbegray.slack.SlackClientFactory;
+import allbegray.slack.type.Attachment;
 import allbegray.slack.webapi.SlackWebApiClient;
+import allbegray.slack.webapi.method.chats.ChatPostMessageMethod;
 import de.florianmarsch.picture.Screenshot;
 import de.florianmarsch.server.Server;
 import de.florianmarsch.vo.SlackVO;
@@ -93,8 +97,20 @@ public class Main {
 			SlackVO tweet = mapper.readValue(bodyContent, SlackVO.class);
 
 			SlackWebApiClient webApiClient = SlackClientFactory.createWebApiClient(tweet.getAccessToken());
-			message = webApiClient.postMessage(tweet.getChannel(), tweet.getTweet(), "Copa-Bot", Boolean.FALSE);
-
+			ChatPostMessageMethod messagePost = new ChatPostMessageMethod(tweet.getChannel(), tweet.getTweet());
+			messagePost.setAs_user(Boolean.FALSE);
+			messagePost.setUsername("Copa-Bot");
+			if(tweet.getImage() != null) {
+				List<Attachment> attachments = new ArrayList<>();
+				Attachment attachment = new Attachment();
+				attachment.setImage_url(tweet.getImage());
+				attachment.setFallback(tweet.getTweet());
+				attachments.add(attachment );
+				messagePost.setAttachments(attachments );
+			}
+			webApiClient.postMessage(messagePost );
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			message = e.getMessage();
