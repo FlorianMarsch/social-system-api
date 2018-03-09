@@ -49,6 +49,14 @@ public class Server {
 		});
 	}
 	
+	public void getBinary(String path, Route route) {
+		Spark.get(path, (request, response) -> {
+			Object result = route.handle(request, response);
+			response.status(200);
+			return result;
+		});
+	}
+	
 	public void post(String path, Route route) {
 		Spark.post(path, (request, response) -> {
 			Object result = route.handle(request, response);
