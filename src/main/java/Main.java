@@ -131,7 +131,7 @@ public class Main {
 						File file = null;
 						file = sh.save(image);
 						String key = UUID.randomUUID().toString();
-						
+						System.out.println(key);
 						pictures.put(key, file);
 						
 						attachment.setImage_url("http://social-system-api.herokuapp.com/api/image/"+key);
