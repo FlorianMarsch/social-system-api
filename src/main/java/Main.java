@@ -5,8 +5,11 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import allbegray.slack.SlackClientFactory;
+import allbegray.slack.webapi.SlackWebApiClient;
 import de.florianmarsch.picture.Screenshot;
 import de.florianmarsch.server.Server;
+import de.florianmarsch.vo.SlackVO;
 import de.florianmarsch.vo.TweetVO;
 import twitter4j.Status;
 import twitter4j.StatusUpdate;
@@ -75,5 +78,32 @@ public class Main {
 			return attributes;
 		});
 
+	server.post("/api/slack", (request, response) -> {
+
+		String message = "";
+		try {
+			String bodyContent = request.body();
+			if (bodyContent == null || bodyContent.trim().isEmpty()) {
+				throw new IllegalArgumentException("No Content");
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+			SlackVO tweet = mapper.readValue(bodyContent, SlackVO.class);
+
+			SlackWebApiClient webApiClient = SlackClientFactory.createWebApiClient(tweet.getAccessToken());
+			message = webApiClient.postMessage(tweet.getChannel(), tweet.getTweet(), "Copa-Bot", Boolean.FALSE);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			message = e.getMessage();
+		}
+
+		Map<String, Object> attributes = new HashMap<>();
+		attributes.put("data", message);
+		return attributes;
+	});
+	
 	}
 }
