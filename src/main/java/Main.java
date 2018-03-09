@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.http.HttpHeader;
 
@@ -95,7 +98,13 @@ public class Main {
 			File file = pictures.get(key);
 			
 			response.type( "image/png");
-			return IOUtils.toString(new FileInputStream(file));
+			
+			
+			HttpServletResponse raw = response.raw();
+			ServletOutputStream outputStream = raw.getOutputStream();
+			
+			IOUtils.copy(new FileInputStream(file), outputStream);
+			return null;
 		});
 		
 	server.post("/api/slack", (request, response) -> {
