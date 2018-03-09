@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jetty.http.HttpHeader;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,7 +94,7 @@ public class Main {
 			String key = request.params(":uuid");
 			File file = pictures.get(key);
 			
-			response.header("Content-Type", "image/png");
+			response.type( "image/png");
 			return IOUtils.toString(new FileInputStream(file));
 		});
 		
