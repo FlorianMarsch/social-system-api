@@ -1,13 +1,18 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import allbegray.slack.SlackClientFactory;
+import allbegray.slack.type.Action;
 import allbegray.slack.type.Attachment;
 import allbegray.slack.webapi.SlackWebApiClient;
 import allbegray.slack.webapi.method.chats.ChatPostMessageMethod;
@@ -22,6 +27,8 @@ import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class Main {
+	
+	static Map<String, File> pictures = new HashMap<>();
 
 	public static void main(String[] args) {
 
@@ -82,6 +89,14 @@ public class Main {
 			return attributes;
 		});
 
+		server.get("/api/image/{uuid}", (request, response) -> {
+			String key = request.params(":id");
+			File file = pictures.get(key);
+			
+			
+			return IOUtils.toString(new FileInputStream(file));
+		});
+		
 	server.post("/api/slack", (request, response) -> {
 
 		String message = "";
@@ -103,7 +118,32 @@ public class Main {
 			if(tweet.getImage() != null) {
 				List<Attachment> attachments = new ArrayList<>();
 				Attachment attachment = new Attachment();
-				attachment.setImage_url(tweet.getImage());
+				
+				
+					String image = tweet.getImage();
+
+					
+					
+					if (tweet.getIsImage()) {
+						attachment.setImage_url(tweet.getImage());
+					} else {
+						Screenshot sh = new Screenshot();
+						File file = null;
+						file = sh.save(image);
+						String key = UUID.randomUUID().toString();
+						
+						pictures.put(key, file);
+						
+						attachment.setImage_url("http://social-system-api.herokuapp.com/api/image/"+key);
+					}
+
+					
+				
+				
+				
+				
+				
+				
 				attachment.setFallback(tweet.getTweet());
 				attachments.add(attachment );
 				messagePost.setAttachments(attachments );
