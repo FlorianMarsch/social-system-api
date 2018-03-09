@@ -105,7 +105,7 @@ public class Main {
 			
 			IOUtils.copy(new FileInputStream(file), outputStream);
 			outputStream.close();
-			return null;
+			return raw;
 		});
 		
 	server.post("/api/slack", (request, response) -> {
