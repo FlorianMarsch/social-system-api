@@ -104,6 +104,7 @@ public class Main {
 			ServletOutputStream outputStream = raw.getOutputStream();
 			
 			IOUtils.copy(new FileInputStream(file), outputStream);
+			outputStream.close();
 			return null;
 		});
 		
