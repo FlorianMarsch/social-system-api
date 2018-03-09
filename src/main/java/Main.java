@@ -89,7 +89,7 @@ public class Main {
 			return attributes;
 		});
 
-		server.get("/api/image/{uuid}", (request, response) -> {
+		server.get("/api/image/:uuid", (request, response) -> {
 			String key = request.params(":uuid");
 			File file = pictures.get(key);
 			
