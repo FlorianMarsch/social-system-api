@@ -63,6 +63,11 @@
 			<version>[4.0,)</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.brunocvcunha.instagram4j</groupId>
+			<artifactId>instagram4j</artifactId>
+			<version>1.7</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
