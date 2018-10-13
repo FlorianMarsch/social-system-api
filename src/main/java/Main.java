@@ -13,8 +13,6 @@ import org.apache.commons.io.IOUtils;
 import org.brunocvcunha.instagram4j.Instagram4j;
 import org.brunocvcunha.instagram4j.requests.InstagramUploadPhotoRequest;
 import org.eclipse.jetty.http.HttpHeader;
-import org.jinstagram.auth.InstagramAuthService;
-import org.jinstagram.auth.oauth.InstagramService;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
