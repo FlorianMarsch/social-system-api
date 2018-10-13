@@ -10,7 +10,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.brunocvcunha.instagram4j.Instagram4j;
+import org.brunocvcunha.instagram4j.requests.InstagramUploadPhotoRequest;
 import org.eclipse.jetty.http.HttpHeader;
+import org.jinstagram.auth.InstagramAuthService;
+import org.jinstagram.auth.oauth.InstagramService;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -78,7 +82,20 @@ public class Main {
 					latestStatus.setMedia(file);
 
 					twitter.updateStatus(latestStatus);
+					
+					//on Images also Update Instagram
+					String instagramusername = System.getenv("INSTAGRAM_USERNAME");
+			        String instagrampassword = System.getenv("INSTAGRAM_PASSWORD");
 
+
+			     // Login to instagram
+			        Instagram4j instagram = Instagram4j.builder().username(instagramusername).password(instagrampassword).build();
+			        instagram.setup();
+			        instagram.login();
+			        
+			        instagram.sendRequest(new InstagramUploadPhotoRequest(
+			        		file,text));
+			        
 				} else {
 					Status status = twitter.updateStatus(text);
 				}
