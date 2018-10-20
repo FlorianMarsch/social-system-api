@@ -112,6 +112,11 @@ public class Main {
 			String key = request.params(":uuid");
 			File file = pictures.get(key);
 			
+			if(file == null) {
+				// no longer in memory
+				response.status(404);
+				return null;
+			}
 			response.type( "image/png");
 			
 			
