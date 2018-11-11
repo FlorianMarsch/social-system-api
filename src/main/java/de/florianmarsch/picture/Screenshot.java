@@ -62,7 +62,7 @@ public class Screenshot {
 			
 			BufferedImage originalImgage = ImageIO.read(output);
 
-	        BufferedImage subImgage = originalImgage.getSubimage(0, 0, 320, (int)((160/2)*1.91));
+	        BufferedImage subImgage = originalImgage.getSubimage(0, 0, 320, 168);
 			
 	        ImageIO.write(subImgage, "png", output);
 	        
