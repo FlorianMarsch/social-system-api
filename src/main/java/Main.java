@@ -93,7 +93,7 @@ public class Main {
 			        instagram.login();
 			        
 			        instagram.sendRequest(new InstagramUploadStoryPhotoRequest(
-			        		file,new ArrayList<>()));
+			        		file));
 			        
 				} else {
 					Status status = twitter.updateStatus(text);
