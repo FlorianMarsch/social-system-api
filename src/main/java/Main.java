@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.brunocvcunha.instagram4j.Instagram4j;
 import org.brunocvcunha.instagram4j.requests.InstagramUploadPhotoRequest;
+import org.brunocvcunha.instagram4j.requests.InstagramUploadStoryPhotoRequest;
 import org.eclipse.jetty.http.HttpHeader;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -91,8 +92,8 @@ public class Main {
 			        instagram.setup();
 			        instagram.login();
 			        
-			        instagram.sendRequest(new InstagramUploadPhotoRequest(
-			        		file,text));
+			        instagram.sendRequest(new InstagramUploadStoryPhotoRequest(
+			        		file,new ArrayList<>()));
 			        
 				} else {
 					Status status = twitter.updateStatus(text);
