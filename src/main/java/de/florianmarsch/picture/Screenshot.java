@@ -62,9 +62,9 @@ public class Screenshot {
 			
 			BufferedImage originalImgage = ImageIO.read(output);
 
-	        BufferedImage subImgage = originalImgage.getSubimage(0, 0, 320, 569);
+	        BufferedImage subImgage = originalImgage;//.getSubimage(0, 0, 320, 569);
 			
-	        ImageIO.write(subImgage, "png", output);
+	        ImageIO.write(subImgage, "jpg", output);
 	        
 			System.out.println("image on file");
 		} catch (Exception e1) {
